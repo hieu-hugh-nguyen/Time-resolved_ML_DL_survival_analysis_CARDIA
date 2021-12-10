@@ -164,31 +164,19 @@ ComDataset = ComDataset[order(ComDataset$ID),]
 
 
 # Write the big dataset to a .CSV file:##########################################
-#Include a row of variable labels, for easier view in Excel                     #
 
-
-#Create a row of variable labels onto the big dataset:
-AllVarLabel = sapply(ComDataset, function(x) attr(x, 'label'))
-rowofAllVarLabel = vector(mode = "character", length = length(AllVarLabel));
-for(k in 1:length(AllVarLabel)){
-  if(is.null(AllVarLabel[[k]])){
-    rowofAllVarLabel[k]="";
-  }
-  else{
-    rowofAllVarLabel[k]=AllVarLabel[[k]];
-  }
-}
-
-rowofAllVarLabelDf = as.data.frame(t(rowofAllVarLabel));
-names(rowofAllVarLabelDf) = names(ComDataset);
 
 # since <time> variables (<hms>, <difftime> class) cannot be written to csv, delete these variables: 
 ComDataset2 <- remove_hms_time_type(ComDataset)
 
 
+# only include participants coming to exam 3 by available data for variable EX3_AGE 'CALCULATED AGE AT EXAM 3'
+
+ComDataset2_y5 <- ComDataset2 %>% filter(!is.na(EX3_AGE))
+
 
 saving.dir = paste0(work_dir, '/csv_files')
-write.csv(ComDataset2, file = paste0(saving.dir,"/", exam_year, "_unimputed_featurespace.csv"),row.names=FALSE)
+write.csv(ComDataset2_y5, file = paste0(saving.dir,"/", exam_year, "_unimputed_featurespace.csv"),row.names=FALSE)
 
 
 
@@ -204,6 +192,20 @@ write.csv(ComDataset2, file = paste0(saving.dir,"/", exam_year, "_unimputed_feat
 
 # Create a Variable Dictionary .CSV file##############################################
 
+#Create a row of variable labels:
+AllVarLabel = sapply(ComDataset, function(x) attr(x, 'label'))
+rowofAllVarLabel = vector(mode = "character", length = length(AllVarLabel));
+for(k in 1:length(AllVarLabel)){
+  if(is.null(AllVarLabel[[k]])){
+    rowofAllVarLabel[k]="";
+  }
+  else{
+    rowofAllVarLabel[k]=AllVarLabel[[k]];
+  }
+}
+
+rowofAllVarLabelDf = as.data.frame(t(rowofAllVarLabel));
+names(rowofAllVarLabelDf) = names(ComDataset);
 
 #Count the total of participants for each column:
 #Also look for whether the variable for each column is Categorical or Continuous:
@@ -214,7 +216,7 @@ for (y in 1:length(names(ComDataset))){
   colObject=eval(parse(text=paste("ComDataset", "$", names(ComDataset)[y],sep="")));
   numParticipants[y] = sum(sapply(colObject, function(x) (!is.na(x) && x!="")));
   
-  if(length(unique(colObject)) <= 6){ #If there are fewer than 6 unique values, categorical 
+  if(length(unique(colObject)) <= 20){ #If there are fewer than 20 unique values, categorical 
     CategoricalOrContinuous[y] = 0; 
   }
   else{
@@ -224,7 +226,7 @@ for (y in 1:length(names(ComDataset))){
 } 
 
 
-datadoc <- c("",datadoc) # add empty doc for the ID variable
+datadoc1 <- c("",datadoc) # add empty doc for the ID variable
 
 
 
@@ -235,8 +237,8 @@ names(AllVarDf)= c("Variable Name","Variable Label","Number of Participants (tot
 #move ID row to the top:
 AllVarDf = bind_rows(AllVarDf %>% filter(`Variable Name` == 'ID'), AllVarDf %>% filter(`Variable Name` != 'ID'))  
 
-AllVarDf$Datadoc = datadoc
-AllVarDf$Percent_available = AllVarDf$`Number of Participants (total non-NA values)`/nrow(ComDataset)*100
+AllVarDf$Datadoc = datadoc1
+AllVarDf$Percent_available_in_y5_exam_subjects = AllVarDf$`Number of Participants (total non-NA values)`/nrow(ComDataset2_y5)*100
 #Write to a csv file: 
 saving.dir = paste0(work_dir,'/csv_files')
 write.csv(AllVarDf, file = paste0(saving.dir,"/", exam_year, "_all_vars_dictionary.csv"),row.names=FALSE)
