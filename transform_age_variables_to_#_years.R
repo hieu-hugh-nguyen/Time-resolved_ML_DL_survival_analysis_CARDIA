@@ -4,47 +4,42 @@ rm(list=ls()) #Clear all
 cat("\014")
 
 # set working directory: 
-#work_dir= 'C:/Users/HIEU/Desktop/CARDIA project/Git'
-work_dir= 'U:/HIEU/CARDIA_project/CARDIA_project'
+work_dir = 'U:/Hieu/CARDIA_project/CARDIA_project/cvd_outcome_rerun_2'
 setwd(work_dir)
 
 # load libraries:
-list.of.packages <- c("mlbench",'ggplot2','caret', 'dplyr', 'tibble', 'ROCR','parallelMap'
-                      ,'riskRegression', 'survival','randomForestSRC', 'survivalROC'
-                      , 'pec', 'risksetROC')
+list.of.packages <- c("mlbench",'ggplot2','caret', 'dplyr', 'tibble')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only = T)
 
 # load the dataset
-#loading_dir = 'C:/Users/HIEU/Desktop/CARDIA project/CARDIA_project/csv_files'
 loading_dir = paste0(work_dir, '/csv_files')
-feature_space = read.csv(paste0(loading_dir,'/fullfeaturespace','.csv'), stringsAsFactors = FALSE)
-
-# fix all age variables:
-# convert all age at zero (didn't have the condition so field left blank)
-age_variables = c('C08HBPAG','C08CHOAG','C08HRTAG','C08ANGAG',
-                  'C08RHDAG','C08MVPAG','C08OTHAG','C08DIBAG',
-                  'C08NEPAG','C08OTKAG','C08HEPAG','C08LUNAG',
-                  'C08BRSAG','C08BLDAG','C08TESAG','C08BONAG',
-                  'C08MELAG','C08SKNAG','C08BRNAG','C08STMAG',
-                  'C08OCAAG','C08GALDA','C08PRGAG','C08KYSAG','C08URNAG','C09SMKAG',
-                  'C11FHAGE','C11MHAGE')
+feature_space = read.csv(paste0(loading_dir,'/y5_feature_space_manually_filled_NA','.csv'), stringsAsFactors = FALSE)
 
 
-curr_feature_space <- feature_space
-for (i in 1:length(age_variables)){
-  curr_feature_space <- curr_feature_space %>% 
-    mutate(!!age_variables[i] := ifelse(get(age_variables[i]) ==0, 99, get(age_variables[i]))) 
-  
-}  
-feature_space_updated_age <- curr_feature_space
+## Make sure all age variables which equals to zero to set to 99:
+## commented out because already fixed that
+# age_variables = c('C08HBPAG','C08CHOAG','C08HRTAG','C08ANGAG',
+#                   'C08RHDAG','C08MVPAG','C08OTHAG','C08DIBAG',
+#                   'C08NEPAG','C08OTKAG','C08HEPAG','C08LUNAG',
+#                   'C08BRSAG','C08BLDAG','C08TESAG','C08BONAG',
+#                   'C08MELAG','C08SKNAG','C08BRNAG','C08STMAG',
+#                   'C08OCAAG','C08GALDA','C08PRGAG','C08KYSAG','C08URNAG','C09SMKAG',
+#                   'C11FHAGE','C11MHAGE')
+# 
+# 
+# curr_feature_space <- feature_space
+# for (i in 1:length(age_variables)){
+#   curr_feature_space <- curr_feature_space %>% 
+#     mutate(!!age_variables[i] := ifelse(get(age_variables[i]) ==0, 99, get(age_variables[i]))) 
+#   
+# }  
+# feature_space_updated_age <- curr_feature_space
 
-write.csv(feature_space_updated_age, file = paste0(work_dir,'/csv_files/feature_space_updated_age_variables.csv')
-          ,  row.names=FALSE)
 
 # convert from 'age having...' to 'number of years having...' by subtracting age:
-temp_feature_space <- feature_space_updated_age
+temp_feature_space <- feature_space
 
 age_variables_to_be_converted = c('C08HBPAG','C08CHOAG','C08HRTAG','C08ANGAG',
                   'C08RHDAG','C08MVPAG','C08OTHAG','C08DIBAG',
@@ -63,19 +58,9 @@ for (i in 1:length(age_variables_to_be_converted)){
 feature_space_updated_years_having_conditions <- temp_feature_space
 feature_space_updated_years_having_conditions[feature_space_updated_years_having_conditions < 0] <- 0
 
+# remove exam 0 age (since already has exam 3 age)
 feature_space_updated_years_having_conditions <- within(feature_space_updated_years_having_conditions, rm(EXAMAGE))
 
-write.csv(feature_space_updated_years_having_conditions, file = paste0(work_dir,'/csv_files/feature_space_updated_years_having_conditions.csv')
+write.csv(feature_space_updated_years_having_conditions, file = paste0(work_dir,'/csv_files/feature_space_NA_manually_filled_updated_years_having_conditions.csv')
           ,  row.names=FALSE)
 
-
-feature_space_fix_incorrect_cat_var <- feature_space_updated_years_having_conditions %>% 
-  mutate(C08HRTAK = ifelse(C08HRTAK <2, 0, 1)) %>%
-  mutate(C08NEP = ifelse(C08NEP <2, 0, 1)) %>%
-  mutate(C08KYS = ifelse(C08KYS <2, 0, 1)) %>% 
-  mutate(C08OTHKY = ifelse(C08OTHKY <2, 0, 1)) %>%
-  mutate(C08URINE = ifelse(C08URINE <2, 0, 1))
-  
-
-write.csv(feature_space_fix_incorrect_cat_var, file = paste0(work_dir,'/csv_files/feature_space_fix_incorrect_cat_var.csv')
-          ,  row.names=FALSE)
