@@ -98,10 +98,26 @@ data_after_y10_origin_at_10 = data_after_y10 %>% mutate(time = time - 365.25*10)
 
 
 
-# write.csv(data_after_y10_origin_at_10, paste0(loading_dir,'/data_after_y10_origin_at_10.csv'),row.names = F)
-# write.csv(data_y10, paste0(loading_dir,'/data_y10.csv'),row.names = F)
 
+# Load the var ranking:
+loading_dir = paste0(work_dir,'/csv_files')
+var_order_short_term_df = read.csv(file = paste0(loading_dir,
+                                   '/averaged_outerloop_VIMP_short_term.csv'))
+var_order_long_term_df = read.csv(file = paste0(loading_dir,
+                                   '/averaged_outerloop_VIMP_long_term.csv'))
 
+var_order_short_term = apply(var_order_short_term_df, 2, as.character)[,2]
+var_order_long_term = apply(var_order_long_term_df, 2, as.character)[,2]
+
+# subset the top 20 var:
+n_top = 20
+data_after_y10_origin_at_10_top_var = subsetDataTopnVar(n_top, data_after_y10_origin_at_10, var_order_long_term)
+data_y10_top_var = subsetDataTopnVar(n_top, data_y10, var_order_short_term)
+
+# write.csv(data_after_y10_origin_at_10_top_var, paste0(loading_dir,'/data_after_y10_origin_at_10_top_20_var','.csv')
+#           ,row.names = F)
+# write.csv(data_y10_top_var, paste0(loading_dir,'/data_y10_top_20_var','.csv')
+#           ,row.names = F)
 
 
 
@@ -132,19 +148,20 @@ set.seed(seed)
 nfolds = 25
 endpt_yr = 10
 
-
-for (fold in 1:nfolds){
-  # fold = 1
+# fold 2, 7, 
+#for (fold in 8:nfolds){
+for (fold in c(1,3:6,8:25)){
+  #fold = 3
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
   eligible_id = intersect(trainingid, data_after_y10$ID)
-  data = data_after_y10_origin_at_10[which(data_after_y10_origin_at_10$ID %in% eligible_id),]
+  data = data_after_y10_origin_at_10_top_var[which(data_after_y10_origin_at_10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_after_y10_origin_at_10[(which(!(data_after_y10_origin_at_10$ID %in% eligible_id))),]
+  test_data = data_after_y10_origin_at_10_top_var[(which(!(data_after_y10_origin_at_10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
   
   
-  model_name = 'cForest_all_var_long_term'
+  model_name = 'rsf_20_var_long_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -153,40 +170,38 @@ for (fold in 1:nfolds){
     createDir(main_dir, sub_dir)
   }
   #set.seed(seed)
-  model = running_cForest(data)
+  model = running_rsf(data)
   saving_dir = file.path(main_dir, sub_dir)
   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
-
-
-
+  
+  
+  
   # Test set performance: ###################################################################
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
   trained_model = model
   trained_data = data
-
+  
   endpt = 16; # year 26 after Exam 3
   eval_times = 365.25*seq(2, endpt, by = 2)
-
+  
   # probability of having had the disease:
-  tryCatch({
-    prob_risk_test = predictRisk.cForest(trained_model
-                                     #  , traindata = trained_data
-                                     , newdata = test_data
-                                     , times = eval_times
-    )
-    prob_risk_test[is.na(prob_risk_test)] = 0
-    performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
-                                            , test.data = test_data
-                                            , trained.data = trained_data
-                                            , eval.times = eval_times
-    )
-    save(performance_testset
-         , file = paste0(saving.dir, '/performance_testset.RData'))
-  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-
-
+  prob_risk_test = predictRisk.rsf(trained_model
+                                   #  , traindata = trained_data
+                                   , newdata = test_data
+                                   , times = eval_times
+  )
+  prob_risk_test[is.na(prob_risk_test)] = 0
+  performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
+                                          , test.data = test_data
+                                          , trained.data = trained_data
+                                          , eval.times = eval_times
+  )
+  save(performance_testset
+       , file = paste0(saving.dir, '/performance_testset.RData'))
+  
+  
 }
 
 
@@ -200,14 +215,14 @@ for (fold in 1:nfolds){
   #fold = 1
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
-  eligible_id = intersect(trainingid, data_y10$ID)
-  data = data_y10[which(data_y10$ID %in% eligible_id),]
+  eligible_id = intersect(trainingid, data_y10_top_var$ID)
+  data = data_y10_top_var[which(data_y10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_y10[(which(!(data_y10$ID %in% eligible_id))),]
+  test_data = data_y10_top_var[(which(!(data_y10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
-
   
-  model_name = 'cForest_all_var_short_term'
+  
+  model_name = 'rsf_20_var_short_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -215,41 +230,41 @@ for (fold in 1:nfolds){
   if(!dir.exists(file.path(main_dir, sub_dir))){
     createDir(main_dir, sub_dir)
   }
-  set.seed(seed)
-  model = running_cForest(data)
+  #set.seed(seed)
+  model = running_rsf(data)
   saving_dir = file.path(main_dir, sub_dir)
   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
+  
 
-
-
+  
   # Test set performance: ###################################################################
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
   trained_model = model
   trained_data = data
-
+  
   endpt = 10; # year 26 after Exam 3
   eval_times = 365.25*c(1, seq(2, endpt, by = 2))
-
-  # probability of having had the disease:
-  tryCatch({
-    prob_risk_test = predictRisk.cForest(trained_model
-                                     #  , traindata = trained_data
-                                     , newdata = test_data
-                                     , times = eval_times
-    )
-    prob_risk_test[is.na(prob_risk_test)] = 0
-    performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
-                                            , test.data = test_data
-                                            , trained.data = trained_data
-                                            , eval.times = eval_times
-    )
-    save(performance_testset
-         , file = paste0(saving.dir, '/performance_testset.RData'))
-  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-
   
+  tryCatch({
+    
+  # probability of having had the disease:
+  prob_risk_test = predictRisk.rsf(trained_model
+                                   #  , traindata = trained_data
+                                   , newdata = test_data
+                                   , times = eval_times
+  )
+  prob_risk_test[is.na(prob_risk_test)] = 0
+  performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
+                                          , test.data = test_data
+                                          , trained.data = trained_data
+                                          , eval.times = eval_times
+  )
+  save(performance_testset
+       , file = paste0(saving.dir, '/performance_testset.RData'))
+  
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
 }  
 
 
@@ -265,6 +280,7 @@ for (fold in 1:nfolds){
 
 
 
+
 ### START THE OUTER LOOP:
 
 # Long term prediction and VIMP: ###########################################################
@@ -281,18 +297,164 @@ nfolds = 25
 endpt_yr = 10
 
 
-for (fold in 1:nfolds){
+# for (fold in 1:nfolds){
+for (fold in c(1,3:6,8:25)){
+    
   #fold = 1
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
   eligible_id = intersect(trainingid, data_after_y10$ID)
-  data = data_after_y10_origin_at_10[which(data_after_y10_origin_at_10$ID %in% eligible_id),]
+  data = data_after_y10_origin_at_10_top_var[which(data_after_y10_origin_at_10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_after_y10_origin_at_10[(which(!(data_after_y10_origin_at_10$ID %in% eligible_id))),]
+  test_data = data_after_y10_origin_at_10_top_var[(which(!(data_after_y10_origin_at_10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
   
   
-  model_name = 'gbm_all_var_long_term'
+  model_name = 'cForest_20_var_long_term'
+  gc()
+  main_dir = paste0(work_dir, '/rdata_files')
+  sub_dir = paste0(model_name, '_fold_',fold)
+  
+  if(!dir.exists(file.path(main_dir, sub_dir))){
+    createDir(main_dir, sub_dir)
+  }
+  #set.seed(seed)
+  model = running_cForest(data)
+  saving_dir = file.path(main_dir, sub_dir)
+  save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
+  
+  
+  
+  # Test set performance: ###################################################################
+  loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
+  saving.dir = loading.dir
+  #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
+  trained_model = model
+  trained_data = data
+  
+  endpt = 16; # year 26 after Exam 3
+  eval_times = 365.25*seq(2, endpt, by = 2)
+  
+  # probability of having had the disease:
+  prob_risk_test = predictRisk.cForest(trained_model
+                                       #  , traindata = trained_data
+                                       , newdata = test_data
+                                       , times = eval_times
+  )
+  prob_risk_test[is.na(prob_risk_test)] = 0
+  performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
+                                          , test.data = test_data
+                                          , trained.data = trained_data
+                                          , eval.times = eval_times
+  )
+  save(performance_testset
+       , file = paste0(saving.dir, '/performance_testset.RData'))
+  
+  
+}
+
+
+
+# Short term prediction and VIMP: ######################################################
+trainingid_all = get(load(file = paste0(loading_dir,
+                                        '/all_training_ID_outerloop_cohort_0_10.RData'
+)))
+
+for (fold in 1:nfolds){
+  #fold = 1
+  # Training and fitting model:
+  trainingid = na.omit(trainingid_all[,fold])
+  eligible_id = intersect(trainingid, data_y10_top_var$ID)
+  data = data_y10_top_var[which(data_y10_top_var$ID %in% eligible_id),]
+  data = within(data, rm('ID'))
+  test_data = data_y10_top_var[(which(!(data_y10_top_var$ID %in% eligible_id))),]
+  test_data = within(test_data, rm('ID'))
+  
+  
+  model_name = 'cForest_20_var_short_term'
+  gc()
+  main_dir = paste0(work_dir, '/rdata_files')
+  sub_dir = paste0(model_name, '_fold_',fold)
+  
+  if(!dir.exists(file.path(main_dir, sub_dir))){
+    createDir(main_dir, sub_dir)
+  }
+  #set.seed(seed)
+  model = running_cForest(data)
+  saving_dir = file.path(main_dir, sub_dir)
+  save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
+  
+  
+  
+  # Test set performance: ###################################################################
+  loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
+  saving.dir = loading.dir
+  #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
+  trained_model = model
+  trained_data = data
+  
+  endpt = 10; # year 26 after Exam 3
+  eval_times = 365.25*c(1, seq(2, endpt, by = 2))
+  
+  tryCatch({
+    
+    # probability of having had the disease:
+    prob_risk_test = predictRisk.cForest(trained_model
+                                         #  , traindata = trained_data
+                                         , newdata = test_data
+                                         , times = eval_times
+    )
+    prob_risk_test[is.na(prob_risk_test)] = 0
+    performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
+                                            , test.data = test_data
+                                            , trained.data = trained_data
+                                            , eval.times = eval_times
+    )
+    save(performance_testset
+         , file = paste0(saving.dir, '/performance_testset.RData'))
+    
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+}  
+
+
+
+
+
+
+
+
+
+
+### START THE OUTER LOOP:
+
+# Long term prediction and VIMP: ###########################################################
+
+# include training patients only, exclude testing patients:
+loading_dir = paste0(work_dir, '/rdata_files')
+trainingid_all = get(load(file = paste0(loading_dir,
+                                        '/all_training_ID_outerloop_cohort_10_26.RData'
+)))
+start_time = Sys.time()
+seed = 4495
+set.seed(seed)
+nfolds = 25
+endpt_yr = 10
+
+
+# for (fold in 1:nfolds){
+for (fold in c(1,3:6,8:25)){
+  
+  #fold = 1
+  # Training and fitting model:
+  trainingid = na.omit(trainingid_all[,fold])
+  eligible_id = intersect(trainingid, data_after_y10$ID)
+  data = data_after_y10_origin_at_10_top_var[which(data_after_y10_origin_at_10_top_var$ID %in% eligible_id),]
+  data = within(data, rm('ID'))
+  test_data = data_after_y10_origin_at_10_top_var[(which(!(data_after_y10_origin_at_10_top_var$ID %in% eligible_id))),]
+  test_data = within(test_data, rm('ID'))
+  
+  
+  model_name = 'gbm_20_var_long_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -318,7 +480,6 @@ for (fold in 1:nfolds){
   eval_times = 365.25*seq(2, endpt, by = 2)
   
   # probability of having had the disease:
-  tryCatch({
   prob_risk_test = predictRisk.gbm(trained_model
                                    #  , traindata = trained_data
                                    , newdata = test_data
@@ -332,7 +493,6 @@ for (fold in 1:nfolds){
   )
   save(performance_testset
        , file = paste0(saving.dir, '/performance_testset.RData'))
-  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   
   
 }
@@ -348,14 +508,14 @@ for (fold in 1:nfolds){
   #fold = 1
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
-  eligible_id = intersect(trainingid, data_y10$ID)
-  data = data_y10[which(data_y10$ID %in% eligible_id),]
+  eligible_id = intersect(trainingid, data_y10_top_var$ID)
+  data = data_y10_top_var[which(data_y10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_y10[(which(!(data_y10$ID %in% eligible_id))),]
+  test_data = data_y10_top_var[(which(!(data_y10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
   
   
-  model_name = 'gbm_all_var_short_term'
+  model_name = 'gbm_20_var_short_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -368,7 +528,7 @@ for (fold in 1:nfolds){
   saving_dir = file.path(main_dir, sub_dir)
   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
   
-
+  
   
   # Test set performance: ###################################################################
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
@@ -380,8 +540,9 @@ for (fold in 1:nfolds){
   endpt = 10; # year 26 after Exam 3
   eval_times = 365.25*c(1, seq(2, endpt, by = 2))
   
-  # probability of having had the disease:
   tryCatch({
+    
+    # probability of having had the disease:
     prob_risk_test = predictRisk.gbm(trained_model
                                      #  , traindata = trained_data
                                      , newdata = test_data
@@ -395,10 +556,14 @@ for (fold in 1:nfolds){
     )
     save(performance_testset
          , file = paste0(saving.dir, '/performance_testset.RData'))
+    
   }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-
-  
 }  
+
+
+
+
+
 
 
 
@@ -423,18 +588,22 @@ nfolds = 25
 endpt_yr = 10
 
 
-for (fold in 8:nfolds){
-  #fold = 1
+# for (fold in 6:nfolds){
+# for (fold in 1:nfolds){
+for (fold in c(1,3:6,8:25)){
+    
+    
+    #fold = 1
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
   eligible_id = intersect(trainingid, data_after_y10$ID)
-  data = data_after_y10_origin_at_10[which(data_after_y10_origin_at_10$ID %in% eligible_id),]
+  data = data_after_y10_origin_at_10_top_var[which(data_after_y10_origin_at_10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_after_y10_origin_at_10[(which(!(data_after_y10_origin_at_10$ID %in% eligible_id))),]
+  test_data = data_after_y10_origin_at_10_top_var[(which(!(data_after_y10_origin_at_10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
   
   
-  model_name = 'lasso_all_var_long_term'
+  model_name = 'lasso_20_var_long_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -486,18 +655,20 @@ trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
 
+# for (fold in 4:nfolds){
 for (fold in 1:nfolds){
+    
   #fold = 1
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
-  eligible_id = intersect(trainingid, data_y10$ID)
-  data = data_y10[which(data_y10$ID %in% eligible_id),]
+  eligible_id = intersect(trainingid, data_y10_top_var$ID)
+  data = data_y10_top_var[which(data_y10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_y10[(which(!(data_y10$ID %in% eligible_id))),]
+  test_data = data_y10_top_var[(which(!(data_y10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
   
   
-  model_name = 'lasso_all_var_short_term'
+  model_name = 'lasso_20_var_short_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -545,137 +716,15 @@ for (fold in 1:nfolds){
 
 
 
-# 
-# ### START THE OUTER LOOP:
-# 
-# # Long term prediction and VIMP: ###########################################################
-# 
-# # include training patients only, exclude testing patients:
-# loading_dir = paste0(work_dir, '/rdata_files')
-# trainingid_all = get(load(file = paste0(loading_dir,
-#                                         '/all_training_ID_outerloop_cohort_10_26.RData'
-# )))
-# start_time = Sys.time()
-# seed = 4495
-# set.seed(seed)
-# nfolds = 25
-# endpt_yr = 10
-# 
-# 
-# for (fold in 1:nfolds){
-#   #fold = 1
-#   # Training and fitting model:
-#   trainingid = na.omit(trainingid_all[,fold])
-#   eligible_id = intersect(trainingid, data_after_y10$ID)
-#   data = data_after_y10_origin_at_10[which(data_after_y10_origin_at_10$ID %in% eligible_id),]
-#   data = within(data, rm('ID'))
-#   test_data = data_after_y10_origin_at_10[(which(!(data_after_y10_origin_at_10$ID %in% eligible_id))),]
-#   test_data = within(test_data, rm('ID'))
-#   
-#   
-#   model_name = 'lasso_all_var_long_term'
-#   gc()
-#   main_dir = paste0(work_dir, '/rdata_files')
-#   sub_dir = paste0(model_name, '_fold_',fold)
-#   
-#   if(!dir.exists(file.path(main_dir, sub_dir))){
-#     createDir(main_dir, sub_dir)
-#   }
-#   #set.seed(seed)
-#   model = running_lasso(data)
-#   saving_dir = file.path(main_dir, sub_dir)
-#   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
-#   
-#   
-#   
-#   # Test set performance: ###################################################################
-#   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
-#   saving.dir = loading.dir
-#   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
-#   trained_model = model
-#   trained_data = data
-#   
-#   endpt = 16; # year 26 after Exam 3
-#   eval_times = 365.25*seq(2, endpt, by = 2)
-#   
-#   # probability of having had the disease:
-#   prob_risk_test = predictRisk.cox(trained_model
-#                                    #  , traindata = trained_data
-#                                    , newdata = test_data
-#                                    , times = eval_times
-#   )
-#   prob_risk_test[is.na(prob_risk_test)] = 0
-#   performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
-#                                           , test.data = test_data
-#                                           , trained.data = trained_data
-#                                           , eval.times = eval_times
-#   )
-#   save(performance_testset
-#        , file = paste0(saving.dir, '/performance_testset.RData'))
-#   
-#   
-# }
-# 
-# 
-# 
-# # Short term prediction and VIMP: ######################################################
-# trainingid_all = get(load(file = paste0(loading_dir,
-#                                         '/all_training_ID_outerloop_cohort_0_10.RData'
-# )))
-# 
-# for (fold in 1:nfolds){
-#   #fold = 1
-#   # Training and fitting model:
-#   trainingid = na.omit(trainingid_all[,fold])
-#   eligible_id = intersect(trainingid, data_y10$ID)
-#   data = data_y10[which(data_y10$ID %in% eligible_id),]
-#   data = within(data, rm('ID'))
-#   test_data = data_y10[(which(!(data_y10$ID %in% eligible_id))),]
-#   test_data = within(test_data, rm('ID'))
-#   
-#   
-#   model_name = 'lasso_all_var_short_term'
-#   gc()
-#   main_dir = paste0(work_dir, '/rdata_files')
-#   sub_dir = paste0(model_name, '_fold_',fold)
-#   
-#   if(!dir.exists(file.path(main_dir, sub_dir))){
-#     createDir(main_dir, sub_dir)
-#   }
-#   #set.seed(seed)
-#   model = running_lasso(data)
-#   saving_dir = file.path(main_dir, sub_dir)
-#   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
-#   
-#   
-#   
-#   # Test set performance: ###################################################################
-#   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
-#   saving.dir = loading.dir
-#   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
-#   trained_model = model
-#   trained_data = data
-#   
-#   endpt = 10; # year 26 after Exam 3
-#   eval_times = 365.25*c(1, seq(2, endpt, by = 2))
-#   
-#   # probability of having had the disease:
-#   prob_risk_test = predictRisk.cox(trained_model
-#                                    #  , traindata = trained_data
-#                                    , newdata = test_data
-#                                    , times = eval_times
-#   )
-#   prob_risk_test[is.na(prob_risk_test)] = 0
-#   performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
-#                                           , test.data = test_data
-#                                           , trained.data = trained_data
-#                                           , eval.times = eval_times
-#   )
-#   save(performance_testset
-#        , file = paste0(saving.dir, '/performance_testset.RData'))
-#   
-#   
-# }  
+
+
+
+
+
+
+
+
+
 
 
 
@@ -698,19 +747,21 @@ set.seed(seed)
 nfolds = 25
 endpt_yr = 10
 
-# skip fold 2, 7,
-for (fold in 8:nfolds){
+
+# for (fold in 1:nfolds){
+for (fold in c(1,3:6,8:25)){
+  
   #fold = 1
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
   eligible_id = intersect(trainingid, data_after_y10$ID)
-  data = data_after_y10_origin_at_10[which(data_after_y10_origin_at_10$ID %in% eligible_id),]
+  data = data_after_y10_origin_at_10_top_var[which(data_after_y10_origin_at_10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_after_y10_origin_at_10[(which(!(data_after_y10_origin_at_10$ID %in% eligible_id))),]
+  test_data = data_after_y10_origin_at_10_top_var[(which(!(data_after_y10_origin_at_10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
-
   
-  model_name = 'coxBoost_all_var_long_term'
+  
+  model_name = 'cox_20_var_long_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -718,25 +769,25 @@ for (fold in 8:nfolds){
   if(!dir.exists(file.path(main_dir, sub_dir))){
     createDir(main_dir, sub_dir)
   }
-  set.seed(seed)
-  model = running_coxBoost2(data)
+  #set.seed(seed)
+  model = running_coxph(data)
   saving_dir = file.path(main_dir, sub_dir)
   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
-
-
-
+  
+  
+  
   # Test set performance: ###################################################################
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
   trained_model = model
   trained_data = data
-
+  
   endpt = 16; # year 26 after Exam 3
   eval_times = 365.25*seq(2, endpt, by = 2)
-
+  
   # probability of having had the disease:
-  prob_risk_test = predictRisk.coxBoost2(trained_model
+  prob_risk_test = predictRisk.cox(trained_model
                                    #  , traindata = trained_data
                                    , newdata = test_data
                                    , times = eval_times
@@ -749,7 +800,7 @@ for (fold in 8:nfolds){
   )
   save(performance_testset
        , file = paste0(saving.dir, '/performance_testset.RData'))
-
+  
   
 }
 
@@ -764,14 +815,92 @@ for (fold in 1:nfolds){
   #fold = 1
   # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
-  eligible_id = intersect(trainingid, data_y10$ID)
-  data = data_y10[which(data_y10$ID %in% eligible_id),]
+  eligible_id = intersect(trainingid, data_y10_top_var$ID)
+  data = data_y10_top_var[which(data_y10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_y10[(which(!(data_y10$ID %in% eligible_id))),]
+  test_data = data_y10_top_var[(which(!(data_y10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
+  
+  
+  model_name = 'cox_20_var_short_term'
+  gc()
+  main_dir = paste0(work_dir, '/rdata_files')
+  sub_dir = paste0(model_name, '_fold_',fold)
+  
+  if(!dir.exists(file.path(main_dir, sub_dir))){
+    createDir(main_dir, sub_dir)
+  }
+  #set.seed(seed)
+  model = running_coxph(data)
+  saving_dir = file.path(main_dir, sub_dir)
+  save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
+  
+  
+  
+  # Test set performance: ###################################################################
+  loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
+  saving.dir = loading.dir
+  #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
+  trained_model = model
+  trained_data = data
+  
+  endpt = 10; # year 26 after Exam 3
+  eval_times = 365.25*c(1, seq(2, endpt, by = 2))
+  
+  # probability of having had the disease:
+  prob_risk_test = predictRisk.cox(trained_model
+                                   #  , traindata = trained_data
+                                   , newdata = test_data
+                                   , times = eval_times
+  )
+  prob_risk_test[is.na(prob_risk_test)] = 0
+  performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
+                                          , test.data = test_data
+                                          , trained.data = trained_data
+                                          , eval.times = eval_times
+  )
+  save(performance_testset
+       , file = paste0(saving.dir, '/performance_testset.RData'))
+  
+  
+}  
 
 
-  model_name = 'coxBoost_all_var_short_term'
+
+
+
+
+
+### START THE OUTER LOOP:
+
+# Long term prediction and VIMP: ###########################################################
+
+# include training patients only, exclude testing patients:
+loading_dir = paste0(work_dir, '/rdata_files')
+trainingid_all = get(load(file = paste0(loading_dir,
+                                        '/all_training_ID_outerloop_cohort_10_26.RData'
+)))
+start_time = Sys.time()
+seed = 4495
+set.seed(seed)
+nfolds = 25
+endpt_yr = 10
+
+
+# for (fold in 1:nfolds){
+for (fold in c(1,3:6,8:25)){
+  
+  #fold = 1
+  # Training and fitting model:
+  trainingid = na.omit(trainingid_all[,fold])
+  eligible_id = intersect(trainingid, data_after_y10$ID)
+  data = data_after_y10_origin_at_10_top_var[which(data_after_y10_origin_at_10_top_var$ID %in% eligible_id),]
+  data = within(data, rm('ID'))
+  test_data = data_after_y10_origin_at_10_top_var[(which(!(data_after_y10_origin_at_10_top_var$ID %in% eligible_id))),]
+  test_data = within(test_data, rm('ID'))
+  
+  
+  model_name = 'coxBoost_20_var_long_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -783,19 +912,19 @@ for (fold in 1:nfolds){
   model = running_coxBoost2(data)
   saving_dir = file.path(main_dir, sub_dir)
   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
-
-
-
+  
+  
+  
   # Test set performance: ###################################################################
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
   trained_model = model
   trained_data = data
-
-  endpt = 10; # year 26 after Exam 3
-  eval_times = 365.25*c(1, seq(2, endpt, by = 2))
-
+  
+  endpt = 16; # year 26 after Exam 3
+  eval_times = 365.25*seq(2, endpt, by = 2)
+  
   # probability of having had the disease:
   prob_risk_test = predictRisk.coxBoost2(trained_model
                                    #  , traindata = trained_data
@@ -810,11 +939,70 @@ for (fold in 1:nfolds){
   )
   save(performance_testset
        , file = paste0(saving.dir, '/performance_testset.RData'))
+  
+  
+}
 
 
-}  
 
+# Short term prediction and VIMP: ######################################################
+trainingid_all = get(load(file = paste0(loading_dir,
+                                        '/all_training_ID_outerloop_cohort_0_10.RData'
+)))
 
+for (fold in 1:nfolds){
+  #fold = 1
+  # Training and fitting model:
+  trainingid = na.omit(trainingid_all[,fold])
+  eligible_id = intersect(trainingid, data_y10_top_var$ID)
+  data = data_y10_top_var[which(data_y10_top_var$ID %in% eligible_id),]
+  data = within(data, rm('ID'))
+  test_data = data_y10_top_var[(which(!(data_y10_top_var$ID %in% eligible_id))),]
+  test_data = within(test_data, rm('ID'))
+  
+  
+  model_name = 'coxBoost_20_var_short_term'
+  gc()
+  main_dir = paste0(work_dir, '/rdata_files')
+  sub_dir = paste0(model_name, '_fold_',fold)
+  
+  if(!dir.exists(file.path(main_dir, sub_dir))){
+    createDir(main_dir, sub_dir)
+  }
+  #set.seed(seed)
+  model = running_coxBoost2(data)
+  saving_dir = file.path(main_dir, sub_dir)
+  save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
+  
+  
+  
+  # Test set performance: ###################################################################
+  loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
+  saving.dir = loading.dir
+  #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
+  trained_model = model
+  trained_data = data
+  
+  endpt = 10; # year 26 after Exam 3
+  eval_times = 365.25*c(1, seq(2, endpt, by = 2))
+  
+  # probability of having had the disease:
+  prob_risk_test = predictRisk.coxBoost2(trained_model
+                                   #  , traindata = trained_data
+                                   , newdata = test_data
+                                   , times = eval_times
+  )
+  prob_risk_test[is.na(prob_risk_test)] = 0
+  performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
+                                          , test.data = test_data
+                                          , trained.data = trained_data
+                                          , eval.times = eval_times
+  )
+  save(performance_testset
+       , file = paste0(saving.dir, '/performance_testset.RData'))
+  
+  
+} 
 
 
 
@@ -845,77 +1033,21 @@ nfolds = 25
 endpt_yr = 10
 
 
-for (fold in 1:nfolds){
-  # ## Training and fitting model:
-  # trainingid = na.omit(trainingid_all[,fold])
-  # eligible_id = intersect(trainingid, data_after_y10$ID)
-  # data = data_after_y10_origin_at_10[which(data_after_y10_origin_at_10$ID %in% eligible_id),]
-  # data = within(data, rm('ID'))
-  # test_data = data_after_y10_origin_at_10[(which(!(data_after_y10_origin_at_10$ID %in% eligible_id))),]
-  # test_data = within(test_data, rm('ID'))
-  # 
+# for (fold in 2:nfolds){
+# for (fold in 3:nfolds){
+for (fold in c(1,3:6,8:25)){
   
-  model_name = 'glmboost_all_var_long_term'
-  gc()
-  main_dir = paste0(work_dir, '/rdata_files')
-  sub_dir = paste0(model_name, '_fold_',fold)
-  
-  if(!dir.exists(file.path(main_dir, sub_dir))){
-    createDir(main_dir, sub_dir)
-  }
-  # #set.seed(seed)
-  # saving_dir = file.path(main_dir, sub_dir)
-  # save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
-  # 
-  # 
-  # 
-  # # Test set performance: ###################################################################
-  # loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
-  # saving.dir = loading.dir
-  # #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
-  # trained_model = model
-  # trained_data = data
-  # 
-  # endpt = 16; # year 26 after Exam 3
-  # eval_times = 365.25*seq(2, endpt, by = 2)
-  # 
-  # # probability of having had the disease:
-  # prob_risk_test = predictRisk.glmboost(trained_model
-  #                                       , traindata = trained_data
-  #                                       , newdata = test_data
-  #                                       , times = eval_times
-  # )
-  # prob_risk_test[is.na(prob_risk_test)] = 0
-  # performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
-  #                                         , test.data = test_data
-  #                                         , trained.data = trained_data
-  #                                         , eval.times = eval_times
-  # )
-  # save(performance_testset
-  #      , file = paste0(saving.dir, '/performance_testset.RData'))
-  
-  
-}
-
-
-
-# Short term prediction and VIMP: ######################################################
-loading_dir = paste0(work_dir, '/rdata_files')
-trainingid_all = get(load(file = paste0(loading_dir,
-                                        '/all_training_ID_outerloop_cohort_0_10.RData'
-)))
-
-for (fold in 1:nfolds){
-#  Training and fitting model:
+  #fold = 1
+  # Training and fitting model:
   trainingid = na.omit(trainingid_all[,fold])
-  eligible_id = intersect(trainingid, data_y10$ID)
-  data = data_y10[which(data_y10$ID %in% eligible_id),]
+  eligible_id = intersect(trainingid, data_after_y10$ID)
+  data = data_after_y10_origin_at_10_top_var[which(data_after_y10_origin_at_10_top_var$ID %in% eligible_id),]
   data = within(data, rm('ID'))
-  test_data = data_y10[(which(!(data_y10$ID %in% eligible_id))),]
+  test_data = data_after_y10_origin_at_10_top_var[(which(!(data_after_y10_origin_at_10_top_var$ID %in% eligible_id))),]
   test_data = within(test_data, rm('ID'))
   
   
-  model_name = 'glmboost_all_var_short_term'
+  model_name = 'glmboost_20_var_long_term'
   gc()
   main_dir = paste0(work_dir, '/rdata_files')
   sub_dir = paste0(model_name, '_fold_',fold)
@@ -923,30 +1055,93 @@ for (fold in 1:nfolds){
   if(!dir.exists(file.path(main_dir, sub_dir))){
     createDir(main_dir, sub_dir)
   }
-  set.seed(seed)
+  #set.seed(seed)
   model = running_glmboost(data)
   saving_dir = file.path(main_dir, sub_dir)
   save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
-
+  
   
   
   # Test set performance: ###################################################################
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
-  trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
-  # trained_model = model
+  #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
+  trained_model = model
   trained_data = data
+  
+  endpt = 16; # year 26 after Exam 3
+  eval_times = 365.25*seq(2, endpt, by = 2)
+  
+  # probability of having had the disease:
+  prob_risk_test = predictRisk.glmboost(trained_model
+                                       , traindata = trained_data
+                                       , newdata = test_data
+                                       , times = eval_times
+  )
+  prob_risk_test[is.na(prob_risk_test)] = 0
+  performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
+                                          , test.data = test_data
+                                          , trained.data = trained_data
+                                          , eval.times = eval_times
+  )
+  save(performance_testset
+       , file = paste0(saving.dir, '/performance_testset.RData'))
+  
+  
+}
 
+
+
+# Short term prediction and VIMP: ######################################################
+trainingid_all = get(load(file = paste0(loading_dir,
+                                        '/all_training_ID_outerloop_cohort_0_10.RData'
+)))
+
+# for (fold in 2:nfolds){
+for (fold in 1:nfolds){
+    
+  #fold = 1
+  # Training and fitting model:
+  trainingid = na.omit(trainingid_all[,fold])
+  eligible_id = intersect(trainingid, data_y10_top_var$ID)
+  data = data_y10_top_var[which(data_y10_top_var$ID %in% eligible_id),]
+  data = within(data, rm('ID'))
+  test_data = data_y10_top_var[(which(!(data_y10_top_var$ID %in% eligible_id))),]
+  test_data = within(test_data, rm('ID'))
+  
+  
+  model_name = 'glmboost_20_var_short_term'
+  gc()
+  main_dir = paste0(work_dir, '/rdata_files')
+  sub_dir = paste0(model_name, '_fold_',fold)
+  
+  if(!dir.exists(file.path(main_dir, sub_dir))){
+    createDir(main_dir, sub_dir)
+  }
+  #set.seed(seed)
+  model = running_glmboost(data)
+  saving_dir = file.path(main_dir, sub_dir)
+  save(model, file = paste0(saving_dir,'/', model_name, '.RData'))
+  
+  
+  
+  # Test set performance: ###################################################################
+  loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
+  saving.dir = loading.dir
+  #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
+  trained_model = model
+  trained_data = data
+  
   endpt = 10; # year 26 after Exam 3
   eval_times = 365.25*c(1, seq(2, endpt, by = 2))
-
+  
   tryCatch({
-
+    
     # probability of having had the disease:
     prob_risk_test = predictRisk.glmboost(trained_model
-                                          , traindata = trained_data
-                                          , newdata = test_data
-                                          , times = eval_times
+                                         , traindata = trained_data
+                                         , newdata = test_data
+                                         , times = eval_times
     )
     prob_risk_test[is.na(prob_risk_test)] = 0
     performance_testset = eval_performance2(prob.risk.test.set = prob_risk_test
@@ -956,7 +1151,8 @@ for (fold in 1:nfolds){
     )
     save(performance_testset
          , file = paste0(saving.dir, '/performance_testset.RData'))
-
+    
   }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-}
+}  
+
 
