@@ -4,7 +4,6 @@ rm(list=ls()) #Clear all
 cat("\014")
 
 # set working directory: 
-#work_dir= 'C:/Users/HIEU/Desktop/CARDIA project/Git'
 work_dir= 'U:/HIEU/CARDIA_project/CARDIA_project/cvd_outcome_rerun_2'
 setwd(work_dir)
 
@@ -35,12 +34,10 @@ source(paste0(work_dir,'/cardia_rerun_2_code/snippet/eval_performance_using_diff
 
 # load the dataset
 loading_dir = paste0(work_dir, '/csv_files')
-# feature_space = read.csv(paste0(loading_dir,'/feature_space_updated_years_having_conditions','.csv'), stringsAsFactors = FALSE)
 feature_space = read.csv(paste0(loading_dir,'/y5_imputed_unsupervised_Dec_2021','.csv'), stringsAsFactors = FALSE)
 
 label_space = read.csv(paste0(loading_dir,'/y5_cvd_outcome','.csv'))
 
-# mort_space = read.csv(paste0(loading_dir,'/y5_mortality_outcome','.csv'))
 
 ascvd_data = read.csv(paste0(loading_dir,'/ascvd_calc_with_id','.csv'))
 names(ascvd_data)[1] = 'ID'
@@ -60,7 +57,6 @@ feature_space = within(feature_space, rm('RACE'))
 data_ascvd = dplyr::inner_join(label_space, ascvd_data, by = 'ID')
 data_ascvd = dplyr::inner_join(data_ascvd, feature_space %>% dplyr::select('ID'), by = 'ID')
 
-# data_mort = dplyr::inner_join(data_ascvd, mort_space, by = 'ID')
 
 
 
@@ -105,28 +101,10 @@ write.csv(data_y10_ascvd, paste0(loading_dir,'/data_y10_ascvd.csv'),row.names = 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### START THE OUTER LOOP:
 
-# Long term prediction and VIMP: ###########################################################
+### Random Survival Forest:########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -166,7 +144,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -196,7 +174,7 @@ for (fold in 1:nfolds){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -227,7 +205,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: ######
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -270,9 +248,9 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
+### cForest:########################################################
 
-# Long term prediction and VIMP: ###########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -312,7 +290,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: ######
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -342,7 +320,7 @@ for (fold in 1:nfolds){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -373,7 +351,7 @@ for (fold in 1:nfolds){
   
 
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -420,9 +398,9 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
+### Gradient Boosting Machine:###############################################
 
-# Long term prediction and VIMP: ###########################################################
+# Long term prediction: #####################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -462,7 +440,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: ######
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -492,7 +470,7 @@ for (fold in 1:nfolds){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -523,7 +501,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -565,9 +543,8 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
-
-# Long term prediction and VIMP: ###########################################################
+### LASSO-Cox:#####################################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -607,7 +584,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: ######
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -639,7 +616,7 @@ for (fold in 1:nfolds){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -670,7 +647,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -719,9 +696,9 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
+### Cox-PH ########################################################################
 
-# Long term prediction and VIMP: ###########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -761,7 +738,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -791,7 +768,7 @@ for (fold in 1:nfolds){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -822,7 +799,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -856,9 +833,9 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
+### CoxBoost ########################################################################
 
-# Long term prediction and VIMP: ###########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -898,7 +875,7 @@ for (fold in 19:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -928,7 +905,7 @@ for (fold in 19:nfolds){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -959,7 +936,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -1002,7 +979,7 @@ for (fold in 1:nfolds){
 
 
 
-# Long term prediction and VIMP: ###########################################################
+### GLMBOOST ########################################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -1042,7 +1019,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -1072,7 +1049,7 @@ for (fold in 1:nfolds){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -1103,7 +1080,7 @@ for (fold in 1:nfolds){
   
   
   
-  # Test set performance: ###################################################################
+  # Test set performance: #####
   loading.dir = paste0(work_dir, '/rdata_files/', model_name, '_fold_', fold)
   saving.dir = loading.dir
   #trained_model = get(load(paste0(loading.dir,'/', model_name, '.RData')))
@@ -1196,7 +1173,7 @@ for (fold in 1:25){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'

@@ -4,7 +4,6 @@ rm(list=ls()) #Clear all
 cat("\014")
 
 # set working directory: 
-#work_dir= 'C:/Users/HIEU/Desktop/CARDIA project/Git'
 work_dir= 'U:/HIEU/CARDIA_project/CARDIA_project/cvd_outcome_rerun_2'
 setwd(work_dir)
 
@@ -35,11 +34,9 @@ source(paste0(work_dir,'/cardia_rerun_2_code/snippet/eval_performance_using_diff
 
 # load the dataset
 loading_dir = paste0(work_dir, '/csv_files')
-# feature_space = read.csv(paste0(loading_dir,'/feature_space_updated_years_having_conditions','.csv'), stringsAsFactors = FALSE)
 feature_space = read.csv(paste0(loading_dir,'/y5_imputed_unsupervised_Dec_2021','.csv'), stringsAsFactors = FALSE)
 
 label_space = read.csv(paste0(loading_dir,'/y5_cvd_outcome','.csv'))
-#label_space = read.csv(paste0(loading_dir,'/y5_mortality_outcome','.csv'))
 ascvd_data = read.csv(paste0(loading_dir,'/ascvd_calc_with_id','.csv'))
 names(ascvd_data)[1] = 'ID'
 # convert race and sex to {0,1} type:
@@ -131,11 +128,10 @@ data_y10_top_var = subsetDataTopnVar(n_top, data_y10, var_order_short_term)
 
 
 
-
-
 ### START THE OUTER LOOP:
 
-# Long term prediction and VIMP: ###########################################################
+### Random Survival Forest:########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -206,7 +202,7 @@ for (fold in c(1,3:6,8:25)){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -280,10 +276,9 @@ for (fold in 1:nfolds){
 
 
 
+### cForest:#######################################################################
 
-### START THE OUTER LOOP:
-
-# Long term prediction and VIMP: ###########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -355,7 +350,7 @@ for (fold in c(1,3:6,8:25)){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -425,9 +420,11 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
 
-# Long term prediction and VIMP: ###########################################################
+
+### Gradient Boosting Machine:###############################################
+
+# Long term prediction: #####################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -499,7 +496,7 @@ for (fold in c(1,3:6,8:25)){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -572,9 +569,9 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
 
-# Long term prediction and VIMP: ###########################################################
+### LASSO-Cox:#####################################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -650,7 +647,7 @@ for (fold in c(1,3:6,8:25)){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -732,9 +729,9 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
+### Cox-PH ########################################################################
 
-# Long term prediction and VIMP: ###########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -806,7 +803,7 @@ for (fold in c(1,3:6,8:25)){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -871,9 +868,9 @@ for (fold in 1:nfolds){
 
 
 
-### START THE OUTER LOOP:
+### CoxBoost ########################################################################
 
-# Long term prediction and VIMP: ###########################################################
+# Long term prediction: ###########################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -945,7 +942,7 @@ for (fold in c(1,3:6,8:25)){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))
@@ -1018,8 +1015,8 @@ for (fold in 1:nfolds){
 
 
 
-
-# Long term prediction and VIMP: ###########################################################
+### GLMBOOST ########################################################################
+# Long term prediction: #############################################################
 
 # include training patients only, exclude testing patients:
 loading_dir = paste0(work_dir, '/rdata_files')
@@ -1092,7 +1089,7 @@ for (fold in c(1,3:6,8:25)){
 
 
 
-# Short term prediction and VIMP: ######################################################
+# Short term prediction: ######################################################
 trainingid_all = get(load(file = paste0(loading_dir,
                                         '/all_training_ID_outerloop_cohort_0_10.RData'
 )))

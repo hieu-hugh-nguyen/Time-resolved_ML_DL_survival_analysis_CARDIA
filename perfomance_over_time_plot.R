@@ -62,8 +62,6 @@ nnet_survival_ascvd_var_mean <- get_combined_performance_mean('nnet_survival', '
 
 
 
-
-loading.dir = paste0(work_dir,'/rdata_files')
 rsf_all_var_median <- get_combined_performance_median('rsf', 'all', 'cindex')
 cForest_all_var_median <- get_combined_performance_median('cForest', 'all', 'cindex')
 coxBoost_all_var_median <- get_combined_performance_median('coxBoost', 'all', 'cindex')
@@ -142,23 +140,6 @@ df_for_plot = data.frame(eval.times
 
                          ,riskscore_median)
 
-
-# df_for_plot = data.frame(eval.times
-#                          
-#                          ,nnet_survival_20_var_mean
-#                          ,nnet_survival_all_var_mean
-#                          
-#                          ,rsf_all_var_mean
-#                          ,rsf_20_var_mean
-#                          # ,cForest_all_var_mean
-#                          #,nnet_survival_all_var_mean
-#                          
-#                          # ,cForest_20_var_mean
-#                          ,cForest_ascvd_var_mean
-#                          # ,cox_ascvd_var_mean
-#                          
-#                          ,riskscore_mean
-# )
 
 names(df_for_plot) = c('eval.times'
                        ,'Nnet-survival Top 20 Variables'

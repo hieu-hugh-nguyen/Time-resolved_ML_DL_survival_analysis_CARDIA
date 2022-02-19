@@ -29,7 +29,7 @@ loading_dir = paste0(work_dir, '/csv_files')
 feature_space = read.csv(paste0(loading_dir,'/y5_imputed_unsupervised_Dec_2021','.csv'), stringsAsFactors = FALSE)
 
 label_space = read.csv(paste0(loading_dir,'/y5_cvd_outcome','.csv'))
-#label_space = read.csv(paste0(loading_dir,'/y5_mortality_outcome','.csv'))
+
 ascvd_data = read.csv(paste0(loading_dir,'/ascvd_calc_with_ID','.csv'))
 names(ascvd_data)[1] = 'ID'
 # convert race and sex to {0,1} type:

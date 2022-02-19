@@ -40,11 +40,9 @@ source(paste0(work_dir,'/cardia_rerun_2_code/snippet/eval_performance_using_diff
 
 # load the dataset
 loading_dir = paste0(work_dir, '/csv_files')
-# feature_space = read.csv(paste0(loading_dir,'/feature_space_updated_years_having_conditions','.csv'), stringsAsFactors = FALSE)
 feature_space = read.csv(paste0(loading_dir,'/y5_imputed_unsupervised_Dec_2021','.csv'), stringsAsFactors = FALSE)
 
 label_space = read.csv(paste0(loading_dir,'/y5_cvd_outcome','.csv'))
-#label_space = read.csv(paste0(loading_dir,'/y5_mortality_outcome','.csv'))
 ascvd_data = read.csv(paste0(loading_dir,'/ascvd_calc_with_id','.csv'))
 names(ascvd_data)[1] = 'ID'
 # convert race and sex to {0,1} type:
@@ -63,7 +61,6 @@ names(label_space)[[3]] = "time"
 data_full = dplyr::inner_join(label_space, ascvd_data, by = 'ID')
 data_full = dplyr::inner_join(data_full, feature_space, by = 'ID')
 
-#data_full = merge(label_space, feature_space, by = 'ID')
 
 #rm(feature_space, label_space, ascvd_data)
 
@@ -115,7 +112,13 @@ var_order_short_term = apply(var_order_short_term_df, 2, as.character)[,2]
 var_order_long_term = apply(var_order_long_term_df, 2, as.character)[,2]
 
 
-## START THE NESTED RSF PROCESS: ############
+
+
+
+
+
+
+## START THE NESTED RSF PROCESS: ###############################################
 
 var.order = var_order_short_term
 

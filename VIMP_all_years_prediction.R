@@ -4,7 +4,6 @@ rm(list=ls()) #Clear all
 cat("\014")
 
 # set working directory: 
-#work_dir= 'C:/Users/HIEU/Desktop/CARDIA project/Git'
 work_dir= 'U:/HIEU/CARDIA_project/CARDIA_project/cvd_outcome_rerun_2'
 setwd(work_dir)
 
@@ -32,11 +31,9 @@ source(paste0(work_dir,'/cardia_rerun_2_code/snippet/eval_performance_using_diff
 
 # load the dataset
 loading_dir = paste0(work_dir, '/csv_files')
-# feature_space = read.csv(paste0(loading_dir,'/feature_space_updated_years_having_conditions','.csv'), stringsAsFactors = FALSE)
 feature_space = read.csv(paste0(loading_dir,'/y5_imputed_unsupervised_Dec_2021','.csv'), stringsAsFactors = FALSE)
 
 label_space = read.csv(paste0(loading_dir,'/y5_cvd_outcome','.csv'))
-#label_space = read.csv(paste0(loading_dir,'/y5_mortality_outcome','.csv'))
 ascvd_data = read.csv(paste0(loading_dir,'/ascvd_calc_with_id','.csv'))
 names(ascvd_data)[1] = 'ID'
 # convert race and sex to {0,1} type:
@@ -49,13 +46,6 @@ names(label_space)[[3]] = "time"
 
 
 
-#feature_space = within(feature_space, rm('SEX'))
-#feature_space = within(feature_space, rm('RACE'))
-# data_full = dplyr::inner_join(label_space, ascvd_data, by = 'ID')
-# data_full = dplyr::inner_join(data_full, feature_space, by = 'ID')
-
-# data_full = dplyr::inner_join(label_space, ascvd_data %>% dplyr::select(c('ID','ascvd')), by = 'ID')
-# data_full = dplyr::inner_join(data_full, feature_space, by = 'ID')
 data_full = dplyr::inner_join(label_space, feature_space, by = 'ID')
 
 #rm(feature_space, label_space, ascvd_data)
@@ -84,15 +74,15 @@ trainingid_all = get(load(file = paste0(loading_dir,
 
 nfolds = 25
  for (fold in 1:nfolds){
-#  fold = 1
+  ##  fold = 1
   # Training and fitting model:
-  # trainingid = na.omit(trainingid_all[,fold])
-  # eligible_id = intersect(trainingid, data_full$ID)
-  # data = data_full[which(data_full$ID %in% eligible_id),]
-  # data = within(data, rm('ID'))
-  # test_data = data_full[(which(!(data_full$ID %in% eligible_id))),]
-  # test_data = within(test_data, rm('ID'))
-  
+  trainingid = na.omit(trainingid_all[,fold])
+  eligible_id = intersect(trainingid, data_full$ID)
+  data = data_full[which(data_full$ID %in% eligible_id),]
+  data = within(data, rm('ID'))
+  test_data = data_full[(which(!(data_full$ID %in% eligible_id))),]
+  test_data = within(test_data, rm('ID'))
+
   
   model_name = 'rsf_all_var_all_years'
   gc()

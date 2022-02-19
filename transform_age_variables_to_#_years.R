@@ -18,26 +18,6 @@ loading_dir = paste0(work_dir, '/csv_files')
 feature_space = read.csv(paste0(loading_dir,'/y5_feature_space_manually_filled_NA','.csv'), stringsAsFactors = FALSE)
 
 
-## Make sure all age variables which equals to zero to set to 99:
-## commented out because already fixed that
-# age_variables = c('C08HBPAG','C08CHOAG','C08HRTAG','C08ANGAG',
-#                   'C08RHDAG','C08MVPAG','C08OTHAG','C08DIBAG',
-#                   'C08NEPAG','C08OTKAG','C08HEPAG','C08LUNAG',
-#                   'C08BRSAG','C08BLDAG','C08TESAG','C08BONAG',
-#                   'C08MELAG','C08SKNAG','C08BRNAG','C08STMAG',
-#                   'C08OCAAG','C08GALDA','C08PRGAG','C08KYSAG','C08URNAG','C09SMKAG',
-#                   'C11FHAGE','C11MHAGE')
-# 
-# 
-# curr_feature_space <- feature_space
-# for (i in 1:length(age_variables)){
-#   curr_feature_space <- curr_feature_space %>% 
-#     mutate(!!age_variables[i] := ifelse(get(age_variables[i]) ==0, 99, get(age_variables[i]))) 
-#   
-# }  
-# feature_space_updated_age <- curr_feature_space
-
-
 # convert from 'age having...' to 'number of years having...' by subtracting age:
 temp_feature_space <- feature_space
 

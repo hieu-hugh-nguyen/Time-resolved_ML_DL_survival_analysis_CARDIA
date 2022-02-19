@@ -4,7 +4,6 @@ rm(list=ls()) #Clear all
 cat("\014")
 
 # set working directory: 
-#work_dir= 'C:/Users/HIEU/Desktop/CARDIA project/Git'
 work_dir= 'U:/HIEU/CARDIA_project/CARDIA_project/cvd_outcome_rerun_2'
 setwd(work_dir)
 
@@ -38,7 +37,6 @@ loading_dir = paste0(work_dir, '/csv_files')
 feature_space = read.csv(paste0(loading_dir,'/y5_imputed_unsupervised_Dec_2021','.csv'), stringsAsFactors = FALSE)
 
 label_space = read.csv(paste0(loading_dir,'/y5_cvd_outcome','.csv'))
-#label_space = read.csv(paste0(loading_dir,'/y5_mortality_outcome','.csv'))
 ascvd_data = read.csv(paste0(loading_dir,'/ascvd_calc_with_id','.csv'))
 names(ascvd_data)[1] = 'ID'
 # convert race and sex to {0,1} type:
@@ -57,7 +55,6 @@ feature_space = within(feature_space, rm('RACE'))
 data_full = dplyr::inner_join(label_space, ascvd_data, by = 'ID')
 data_full = dplyr::inner_join(data_full, feature_space, by = 'ID')
 
-#data_full = merge(label_space, feature_space, by = 'ID')
 
 #rm(feature_space, label_space, ascvd_data)
 

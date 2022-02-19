@@ -4,7 +4,6 @@ rm(list=ls()) #Clear all
 cat("\014")
 
 # set working directory: 
-#work_dir= 'C:/Users/HIEU/Desktop/CARDIA project/Git'
 work_dir= 'U:/HIEU/CARDIA_project/CARDIA_project/cvd_outcome_rerun_2'
 setwd(work_dir)
 
@@ -49,13 +48,6 @@ names(label_space)[[3]] = "time"
 
 
 
-#feature_space = within(feature_space, rm('SEX'))
-#feature_space = within(feature_space, rm('RACE'))
-# data_full = dplyr::inner_join(label_space, ascvd_data, by = 'ID')
-# data_full = dplyr::inner_join(data_full, feature_space, by = 'ID')
-
-# data_full = dplyr::inner_join(label_space, ascvd_data %>% dplyr::select(c('ID','ascvd')), by = 'ID')
-# data_full = dplyr::inner_join(data_full, feature_space, by = 'ID')
 data_full = dplyr::inner_join(label_space, feature_space, by = 'ID')
 
 #rm(feature_space, label_space, ascvd_data)

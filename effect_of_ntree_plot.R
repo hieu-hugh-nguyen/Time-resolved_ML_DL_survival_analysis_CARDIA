@@ -18,16 +18,14 @@ if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only = T)
 
 #==========================================================================
-# Get Survival Probability From Model Prediction
+# Load and Filter Data for Short and Long Term Prediction:
 #==========================================================================
 
 # load the dataset
 loading_dir = paste0(work_dir, '/csv_files')
-# feature_space = read.csv(paste0(loading_dir,'/feature_space_updated_years_having_conditions','.csv'), stringsAsFactors = FALSE)
 feature_space = read.csv(paste0(loading_dir,'/y5_imputed_unsupervised_Dec_2021','.csv'), stringsAsFactors = FALSE)
 
 label_space = read.csv(paste0(loading_dir,'/y5_cvd_outcome','.csv'))
-#label_space = read.csv(paste0(loading_dir,'/y5_mortality_outcome','.csv'))
 ascvd_data = read.csv(paste0(loading_dir,'/ascvd_calc_with_id','.csv'))
 names(ascvd_data)[1] = 'ID'
 # convert race and sex to {0,1} type:
@@ -46,7 +44,6 @@ feature_space = within(feature_space, rm('RACE'))
 data_full = dplyr::inner_join(label_space, ascvd_data, by = 'ID')
 data_full = dplyr::inner_join(data_full, feature_space, by = 'ID')
 
-#data_full = merge(label_space, feature_space, by = 'ID')
 
 #rm(feature_space, label_space, ascvd_data)
 
@@ -90,7 +87,7 @@ data_after_y10_origin_at_10 = data_after_y10 %>% mutate(time = time - 365.25*10)
 
 
 
-## START RUNNING: ###############################
+## Effect of number of trees in the RSF model ###############################
 
 data = data_y10
 ntree_vector <- c(seq(1,90,10), seq(100,1000,20))
@@ -108,31 +105,18 @@ for (i in 1:length(ntree_vector)){
 qplot(ntree_vector, error_vector, geom="line") + coord_cartesian(ylim = c(0.1, 0.5))
 
 
-# ntree_vector2 <- c(seq(1100,10000,1000))
-# error_vector2 <- error_vector
-# for (i in 1:length(ntree_vector2)){
-#   set.seed(1999)
-#   rfsrc_object <- randomForestSRC::rfsrc(Surv(time,event)~., data %>% select(-ID), ntree =ntree_vector2[i])
-#   error_tree <- rfsrc_object$err.rate[length(rfsrc_object$err.rate)]
-#   error_vector2 <- append(error_vector2, error_tree)
-#   print(ntree_vector2[i])
-#   
-# }
-# 
-# qplot(c(ntree_vector, ntree_vector2), error_vector2, geom="line") + coord_cartesian(ylim = c(0.0, 0.5))
-# 
-
-ntree_vector3 <- c(seq(1100,2000,100))
-error_vector3 <- error_vector
-for (i in 1:length(ntree_vector3)){
+# for ntree from 1000 to 2000:
+ntree_vector2<- c(seq(1100,2000,100))
+error_vector2<- error_vector
+for (i in 1:length(ntree_vector2)){
   set.seed(1999)
-  rfsrc_object <- randomForestSRC::rfsrc(Surv(time,event)~., data, ntree =ntree_vector3[i])
+  rfsrc_object <- randomForestSRC::rfsrc(Surv(time,event)~., data, ntree =ntree_vector2[i])
   error_tree <- rfsrc_object$err.rate[length(rfsrc_object$err.rate)]
-  error_vector3 <- append(error_vector3, error_tree)
-  print(ntree_vector3[i])
+  error_vector2<- append(error_vector2, error_tree)
+  print(ntree_vector2[i])
   
 }
 
-qplot(c(ntree_vector, ntree_vector3), error_vector3, geom="line", xlab = 'Number of trees', ylab = 'OOB Error Rate') + 
+qplot(c(ntree_vector, ntree_vector2), error_vector2, geom="line", xlab = 'Number of trees', ylab = 'OOB Error Rate') + 
   coord_cartesian(ylim = c(0.0, 0.5)) +
   geom_line(size =1.2)

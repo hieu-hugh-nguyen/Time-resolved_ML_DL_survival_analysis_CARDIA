@@ -2,7 +2,6 @@ rm(list=ls()) #Clear all
 cat("\014")
 
 work_dir= 'U:/Hieu/CARDIA_project/CARDIA_project/cvd_outcome_rerun_2'
-# work_dir= 'U:/Hieu/CARDIA_project/CARDIA_project/mortality_outcome'
 setwd(work_dir)
 y_oi = 26
 nfold = 25
@@ -10,60 +9,55 @@ endpt = y_oi; # year 26
 
 #eval_times = 365.25*c(10, seq(2,endpt, 2))
 
-#performance = list(prob.risk, cind.obj, pec.obj, last.cindex, last.brier, roc, auc, uno_c, uno_auc
-#                   ,cd_auc, iauc_uno, iauc_cd)
 performance.all = list()
 
 
 model_list = c(
-   #  'rsf_all_var_short_term'
-   # , 'rsf_all_var_long_term'
-   # , 'cForest_all_var_short_term'
-   # , 'cForest_all_var_long_term'
-   # , 'lasso_all_var_short_term'
-   # , 'lasso_all_var_long_term'
-   # , 'coxBoost_all_var_short_term'
-   # , 'coxBoost_all_var_long_term'
-   # , 'gbm_all_var_short_term'
-   # , 'gbm_all_var_long_term'
-   # , 'glmboost_all_var_short_term'
-   # , 'glmboost_all_var_long_term'
-  # 
-  # 
-  #   'nnet_survival_all_var_short_term'
-  #  'nnet_survival_all_var_long_term'
-  #  'cox_nnet_all_var_short_term'
-  #  'cox_nnet_all_var_long_term'
-  # 'deephit_all_var_long_term'
-  # 'deephit_all_var_short_term'
-  # 'deepsurv_all_var_long_term'  
-  # 'deepsurv_all_var_short_term'
-# 
-#   'rsf_20_var_short_term'
-#   ,'rsf_20_var_long_term'
-#   , 'cForest_20_var_short_term'
-#   , 'cForest_20_var_long_term'
-#   , 'cox_20_var_short_term'
-#   , 'cox_20_var_long_term'
-#   ,'lasso_20_var_short_term'
-#   ,'lasso_20_var_long_term'
-#   ,'coxBoost_20_var_short_term'
-#   ,'coxBoost_20_var_long_term'
-#   ,'gbm_20_var_short_term'
-#   ,'gbm_20_var_long_term'
-#   ,'glmboost_20_var_short_term'
-#   ,'glmboost_20_var_long_term'
-# 
-    # 'nnet_survival_20_var_short_term'
-  # 'nnet_survival_20_var_long_term'
-  # 'cox_nnet_20_var_short_term
-  # 'cox_nnet_20_var_long_term'
-  # 'deephit_20_var_short_term'
-  # 'deephit_20_var_long_term'
-  # 'deepsurv_20_var_long_term'
-  # 'deepsurv_20_var_short_term'
+ 'rsf_all_var_short_term'
+, 'rsf_all_var_long_term'
+, 'cForest_all_var_short_term'
+, 'cForest_all_var_long_term'
+, 'lasso_all_var_short_term'
+, 'lasso_all_var_long_term'
+, 'coxBoost_all_var_short_term'
+, 'coxBoost_all_var_long_term'
+, 'gbm_all_var_short_term'
+, 'gbm_all_var_long_term'
+, 'glmboost_all_var_short_term'
+, 'glmboost_all_var_long_term'
+, 'nnet_survival_all_var_short_term'
+, 'nnet_survival_all_var_long_term'
+, 'cox_nnet_all_var_short_term'
+, 'cox_nnet_all_var_long_term'
+, 'deephit_all_var_long_term'
+, 'deephit_all_var_short_term'
+, 'deepsurv_all_var_long_term'
+, 'deepsurv_all_var_short_term'
 
-  'rsf_ascvd_var_short_term'
+  , 'rsf_20_var_short_term'
+  ,'rsf_20_var_long_term'
+  , 'cForest_20_var_short_term'
+  , 'cForest_20_var_long_term'
+  , 'cox_20_var_short_term'
+  , 'cox_20_var_long_term'
+  ,'lasso_20_var_short_term'
+  ,'lasso_20_var_long_term'
+  ,'coxBoost_20_var_short_term'
+  ,'coxBoost_20_var_long_term'
+  ,'gbm_20_var_short_term'
+  ,'gbm_20_var_long_term'
+  ,'glmboost_20_var_short_term'
+  ,'glmboost_20_var_long_term'
+  ,'nnet_survival_20_var_short_term'
+  ,'nnet_survival_20_var_long_term'
+  ,'cox_nnet_20_var_short_term'
+  ,'cox_nnet_20_var_long_term'
+  ,'deephit_20_var_short_term'
+  ,'deephit_20_var_long_term'
+  ,'deepsurv_20_var_long_term'
+  ,'deepsurv_20_var_short_term'
+
+  ,'rsf_ascvd_var_short_term'
   ,'rsf_ascvd_var_long_term'
   , 'cForest_ascvd_var_short_term'
   , 'cForest_ascvd_var_long_term'
@@ -77,15 +71,14 @@ model_list = c(
   ,'coxBoost_ascvd_var_long_term'
   ,'glmboost_ascvd_var_short_term'
   ,'glmboost_ascvd_var_long_term'
-
-     #'nnet_survival_ascvd_var_short_term'
-   # 'nnet_survival_ascvd_var_long_term'
-   # 'cox_nnet_ascvd_var_short_term'
-   # 'cox_nnet_ascvd_var_long_term'
-   # 'deephit_ascvd_var_short_term'
-   # 'deephit_ascvd_var_long_term'
-   #  'deepsurv_ascvd_var_short_term'
-   # 'deepsurv_ascvd_var_long_term'
+  ,'nnet_survival_ascvd_var_short_term'
+  , 'nnet_survival_ascvd_var_long_term'
+  , 'cox_nnet_ascvd_var_short_term'
+  , 'cox_nnet_ascvd_var_long_term'
+  , 'deephit_ascvd_var_short_term'
+  , 'deephit_ascvd_var_long_term'
+  , 'deepsurv_ascvd_var_short_term'
+  , 'deepsurv_ascvd_var_long_term'
   
    )
 
@@ -286,3 +279,63 @@ agg_perf_and_ci <- function(model_name){
 for(n in 1:length(model_list)){
   agg_perf_and_ci(model_list[n])  
 }
+
+
+
+
+
+
+
+
+# Aggregate results for ASCVD risk score model:
+# long term:
+for(fold in 1:nfold){
+  loading.dir = paste0(work_dir, '/rdata_files/ascvd_long_term_fold_', fold)
+  performance = list((get(load(paste0(loading.dir,'/c_ascvd_long_term_testset.RData')))))
+  performance.all = append(performance.all, performance)
+}
+
+endpt = 16
+eval_times = 365.25*seq(2, endpt, by = 2)
+#for collecting c-index of the baseline ASCVD model only:
+dynamic.cindex.all = matrix(unlist(performance.all), nrow = length(performance.all), byrow = T)
+model.cindex = list()
+for (i in 1:length(eval_times)){
+  
+  model.cindex[[i]] = na.omit(dynamic.cindex.all[,i])
+  model.cindex[[i]] = bootstrap_ci(model.cindex[[i]])
+}
+
+saving.dir = paste0(work_dir,'/rdata_files')
+save(model.cindex, file = paste0(saving.dir, '/ci_cindex_ascvd_long_term.RData'))
+
+# for example, 95% CI at year 26:
+year = 16
+model.cindex[[which(eval_times == year*365.25)]]
+
+
+
+# short term:
+for(fold in 1:nfold){
+  loading.dir = paste0(work_dir, '/rdata_files/ascvd_short_term_fold_', fold)
+  performance = list((get(load(paste0(loading.dir,'/c_ascvd_short_term_testset.RData')))))
+  performance.all = append(performance.all, performance)
+}
+
+endpt = 10
+eval_times = 365.25*c(1,seq(2, endpt, by = 2))
+#for collecting c-index of the baseline ASCVD model only:
+dynamic.cindex.all = matrix(unlist(performance.all), nrow = length(performance.all), byrow = T)
+model.cindex = list()
+for (i in 1:length(eval_times)){
+  
+  model.cindex[[i]] = na.omit(dynamic.cindex.all[,i])
+  model.cindex[[i]] = bootstrap_ci(model.cindex[[i]])
+}
+
+saving.dir = paste0(work_dir,'/rdata_files')
+save(model.cindex, file = paste0(saving.dir, '/ci_cindex_ascvd_short_term.RData'))
+
+# for example, 95% CI at year 10:
+year = 10
+model.cindex[[which(eval_times == year*365.25)]]

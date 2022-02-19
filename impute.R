@@ -49,15 +49,6 @@ filter_subjects_data1 = filter_subjects_data %>% dplyr::select(-one_of(c('count_
 
 
 
-# encode binary variables as 0 and 1 instead of 1 and 2:
-
-# data_pre_impute_reencode_cat_var_with_id <- data_pre_impute_with_id %>% 
-#   mutate(C08HRTAK = ifelse(C08HRTAK <2, 0, 1)) %>%
-#   mutate(C08NEP = ifelse(C08NEP <2, 0, 1)) %>%
-#   mutate(C08KYS = ifelse(C08KYS <2, 0, 1)) %>% 
-#   mutate(C08OTHKY = ifelse(C08OTHKY <2, 0, 1)) %>%
-#   mutate(C08URINE = ifelse(C08URINE <2, 0, 1))
-
 
 
 temp_data <- filter_subjects_data
