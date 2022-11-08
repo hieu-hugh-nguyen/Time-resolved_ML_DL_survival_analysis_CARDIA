@@ -1,6 +1,6 @@
 # Lifetime vs 10-year Cardiovascular Disease Prediction in Young Adults Using Statistical Machine Learning and Deep Learning: The CARDIA Study
 
-This repository is the code base for the following paper: 
+This repository is the code base for the following paper:  
 Nguyen, H.T., Venkatesh, B.A., Reis, J.P., Wu, C.O., Carr, J., Nwabuo, C., Gidding, S.S., Guallar, E. and Lima, J.A., 2022. Lifetime vs 10-year Cardiovascular Disease Prediction in Young Adults Using Statistical Machine Learning and Deep Learning: The CARDIA Study. medRxiv.
 
 
