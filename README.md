@@ -4,7 +4,7 @@ This repository is the code base for the following paper:
 Nguyen, H.T., Venkatesh, B.A., Reis, J.P., Wu, C.O., Carr, J., Nwabuo, C., Gidding, S.S., Guallar, E. and Lima, J.A., 2022. Lifetime vs 10-year Cardiovascular Disease Prediction in Young Adults Using Statistical Machine Learning and Deep Learning: The CARDIA Study. medRxiv.
 
 
-Key points from this paper:
+## Key points from this paper:
 
 Question: Do machine learning (ML) and deep learning (DL)-based survival analysis models help differentiate 10-year versus lifetime predictors of cardiovascular (CV) outcomes in young adults?   
 Findings: In this retrospective analysis of 4314 participants in the CARDIA study, ML and DL survival analysis improved CVD risk prediction over traditional Cox models and revealed the top 20 predictors among 449 variables. Top 10-year risk predictors include kidney disease, family history of CV disease, and echocardiographic parameters, where as traditional risk factors and indices of body size featured heavily as top predictors of lifetime CV risk.     
