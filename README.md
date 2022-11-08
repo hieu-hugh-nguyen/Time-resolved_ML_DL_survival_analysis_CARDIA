@@ -144,4 +144,3 @@ Supplementary figures:
   
 Miscellanea:   
 The '/snippet' folder: contains helper functions for the excecution of the above code files in the main folder     
-The '/csv_files' folder: contains the variable dictionaries that entail all excluded and included variables  
