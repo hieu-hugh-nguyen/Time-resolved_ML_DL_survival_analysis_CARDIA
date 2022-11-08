@@ -5,7 +5,9 @@ Nguyen, H.T., Venkatesh, B.A., Reis, J.P., Wu, C.O., Carr, J., Nwabuo, C., Giddi
 
 Key points from this paper:
 Question: Do machine learning (ML) and deep learning (DL)-based survival analysis models help differentiate 10-year versus lifetime predictors of cardiovascular (CV) outcomes in young adults? 
+
 Findings: In this retrospective analysis of 4314 participants in the CARDIA study, ML and DL survival analysis improved CVD risk prediction over traditional Cox models and revealed the top 20 predictors among 449 variables. Top 10-year risk predictors include kidney disease, family history of CV disease, and echocardiographic parameters, where as traditional risk factors and indices of body size featured heavily as top predictors of lifetime CV risk.   
+
 Meaning: Family history, kidney disease, and subclinical phenotyping of CVD using echocardiography play a prominent role for 10-year risk estimation, while traditional CV risk factors alone may be adequate in estimating lifetime CV risk in young adults.
 
 Data: https://www.cardia.dopm.uab.edu/ 
